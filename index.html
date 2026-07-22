@@ -1,0 +1,2173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CGPA Calculator — Multi-University</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================
+           CSS VARIABLES — DARK THEME (DEFAULT)
+           ============================================ */
+        :root {
+            --bg: #0a0a0f;
+            --bg-secondary: #111118;
+            --card: #16161e;
+            --card-hover: #1c1c26;
+            --border: #2a2a36;
+            --border-light: #3a3a48;
+            --fg: #e8e8ec;
+            --fg-muted: #7a7a8a;
+            --fg-dim: #55555f;
+            --accent: #4ade80;
+            --accent-dark: #22c55e;
+            --accent-darker: #16a34a;
+            --accent-glow: rgba(74, 222, 128, 0.12);
+            --accent-glow-strong: rgba(74, 222, 128, 0.25);
+            --danger: #ef4444;
+            --danger-glow: rgba(239, 68, 68, 0.12);
+            --warning: #f59e0b;
+            --warning-glow: rgba(245, 158, 11, 0.12);
+            --info: #38bdf8;
+            --success-bg: rgba(74, 222, 128, 0.08);
+            --danger-bg: rgba(239, 68, 68, 0.08);
+            --input-bg: #0e0e14;
+            --shadow: rgba(0, 0, 0, 0.4);
+            --grid-color: rgba(255, 255, 255, 0.015);
+        }
+
+        /* ============================================
+           CSS VARIABLES — LIGHT THEME
+           ============================================ */
+        [data-theme="light"] {
+            --bg: #e8e4d8;
+            --bg-secondary: #ddd8cc;
+            --card: #f5f3eb;
+            --card-hover: #faf8f2;
+            --border: #b8b4a4;
+            --border-light: #ccc8b8;
+            --fg: #1a1a1e;
+            --fg-muted: #6a6a70;
+            --fg-dim: #9a9a9e;
+            --accent: #16a34a;
+            --accent-dark: #15803d;
+            --accent-darker: #166534;
+            --accent-glow: rgba(22, 163, 74, 0.1);
+            --accent-glow-strong: rgba(22, 163, 74, 0.2);
+            --danger: #dc2626;
+            --danger-glow: rgba(220, 38, 38, 0.1);
+            --warning: #d97706;
+            --warning-glow: rgba(217, 119, 6, 0.1);
+            --info: #0284c7;
+            --success-bg: rgba(22, 163, 74, 0.06);
+            --danger-bg: rgba(220, 38, 38, 0.06);
+            --input-bg: #ebe7db;
+            --shadow: rgba(0, 0, 0, 0.15);
+            --grid-color: rgba(0, 0, 0, 0.03);
+        }
+
+        /* ============================================
+           RESET & BASE
+           ============================================ */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* Subtle Minecraft grid overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 16px 16px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ============================================
+           TYPOGRAPHY
+           ============================================ */
+        h1, h2, h3, .pixel-font {
+            font-family: 'Press Start 2P', monospace;
+            line-height: 1.5;
+            letter-spacing: 0.5px;
+        }
+
+        h1 { font-size: clamp(14px, 3vw, 22px); }
+        h2 { font-size: clamp(11px, 2.5vw, 16px); }
+        h3 { font-size: clamp(9px, 2vw, 12px); }
+
+        /* ============================================
+           SCROLLBAR
+           ============================================ */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border: 2px solid var(--bg);
+        }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+
+        /* ============================================
+           PIXEL COMPONENTS
+           ============================================ */
+        .pixel-card {
+            background: var(--card);
+            border: 3px solid var(--border);
+            position: relative;
+            box-shadow:
+                4px 4px 0 0 var(--shadow),
+                inset 1px 1px 0 rgba(255,255,255,0.03),
+                inset -1px -1px 0 rgba(0,0,0,0.15);
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+        .pixel-card:hover {
+            border-color: var(--border-light);
+        }
+
+        .pixel-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            cursor: pointer;
+            position: relative;
+            box-shadow:
+                0 4px 0 0 var(--accent-dark),
+                inset -2px -2px 0 rgba(0,0,0,0.15),
+                inset 2px 2px 0 rgba(255,255,255,0.2);
+            transition: transform 0.08s, box-shadow 0.08s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+        .pixel-btn:hover {
+            background: var(--accent-dark);
+            box-shadow:
+                0 4px 0 0 var(--accent-darker),
+                inset -2px -2px 0 rgba(0,0,0,0.15),
+                inset 2px 2px 0 rgba(255,255,255,0.2);
+        }
+        .pixel-btn:active {
+            transform: translateY(4px);
+            box-shadow:
+                0 0 0 0 var(--accent-dark),
+                inset -2px -2px 0 rgba(0,0,0,0.15),
+                inset 2px 2px 0 rgba(255,255,255,0.2);
+        }
+        .pixel-btn:focus-visible {
+            outline: 3px solid var(--accent);
+            outline-offset: 3px;
+        }
+
+        .pixel-btn-secondary {
+            background: var(--card);
+            color: var(--fg);
+            border: 3px solid var(--border);
+            box-shadow:
+                0 4px 0 0 var(--border),
+                inset -2px -2px 0 rgba(0,0,0,0.1),
+                inset 2px 2px 0 rgba(255,255,255,0.03);
+        }
+        .pixel-btn-secondary:hover {
+            background: var(--card-hover);
+            border-color: var(--border-light);
+        }
+        .pixel-btn-secondary:active {
+            transform: translateY(4px);
+            box-shadow:
+                0 0 0 0 var(--border),
+                inset -2px -2px 0 rgba(0,0,0,0.1),
+                inset 2px 2px 0 rgba(255,255,255,0.03);
+        }
+
+        .pixel-btn-danger {
+            background: var(--danger);
+            box-shadow:
+                0 4px 0 0 #b91c1c,
+                inset -2px -2px 0 rgba(0,0,0,0.15),
+                inset 2px 2px 0 rgba(255,255,255,0.2);
+        }
+        .pixel-btn-danger:hover {
+            background: #dc2626;
+        }
+        .pixel-btn-danger:active {
+            transform: translateY(4px);
+            box-shadow:
+                0 0 0 0 #b91c1c,
+                inset -2px -2px 0 rgba(0,0,0,0.15),
+                inset 2px 2px 0 rgba(255,255,255,0.2);
+        }
+
+        .pixel-input {
+            background: var(--input-bg);
+            border: 2px solid var(--border);
+            color: var(--fg);
+            padding: 8px 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+            -moz-appearance: textfield;
+        }
+        .pixel-input::-webkit-outer-spin-button,
+        .pixel-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .pixel-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .pixel-input::placeholder {
+            color: var(--fg-dim);
+            font-weight: 400;
+        }
+        .pixel-input.input-error {
+            border-color: var(--danger);
+            box-shadow: 0 0 0 3px var(--danger-glow);
+        }
+
+        .pixel-select {
+            background: var(--input-bg);
+            border: 2px solid var(--border);
+            color: var(--fg);
+            padding: 10px 36px 10px 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Crect x='0' y='8' width='4' height='4' fill='%237a7a8a'/%3E%3Crect x='4' y='4' width='4' height='4' fill='%237a7a8a'/%3E%3Crect x='8' y='0' width='4' height='4' fill='%237a7a8a'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+        .pixel-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* Custom checkbox */
+        .pixel-checkbox-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+            padding: 8px 0;
+        }
+        .pixel-checkbox-wrap input[type="checkbox"] {
+            display: none;
+        }
+        .pixel-checkbox-visual {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-light);
+            background: var(--input-bg);
+            position: relative;
+            flex-shrink: 0;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .pixel-checkbox-wrap input:checked + .pixel-checkbox-visual {
+            background: var(--accent);
+            border-color: var(--accent-dark);
+        }
+        .pixel-checkbox-wrap input:checked + .pixel-checkbox-visual::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            width: 4px;
+            height: 8px;
+            border: solid #000;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
+        }
+        .pixel-checkbox-wrap input:focus-visible + .pixel-checkbox-visual {
+            outline: 3px solid var(--accent);
+            outline-offset: 2px;
+        }
+        .pixel-checkbox-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--fg-muted);
+        }
+
+        /* ============================================
+           PROGRESS BAR
+           ============================================ */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--input-bg);
+            border: 2px solid var(--border);
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            position: relative;
+            min-width: 0;
+        }
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: rgba(255,255,255,0.15);
+        }
+        .progress-fill.fill-warning {
+            background: var(--warning);
+        }
+        .progress-fill.fill-danger {
+            background: var(--danger);
+        }
+        .progress-fill.fill-over {
+            background: var(--accent);
+            width: 100% !important;
+        }
+
+        /* ============================================
+           TOOLTIP
+           ============================================ */
+        .tooltip-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            cursor: help;
+        }
+        .tooltip-icon {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            color: var(--fg-dim);
+            flex-shrink: 0;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .tooltip-wrap:hover .tooltip-icon,
+        .tooltip-wrap.active .tooltip-icon {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .tooltip-text {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card);
+            border: 2px solid var(--border-light);
+            color: var(--fg-muted);
+            padding: 10px 14px;
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 1.5;
+            white-space: normal;
+            min-width: 220px;
+            max-width: 300px;
+            z-index: 1000;
+            box-shadow: 4px 4px 0 var(--shadow);
+            transition: opacity 0.2s, visibility 0.2s;
+            pointer-events: none;
+            text-align: left;
+        }
+        .tooltip-text::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: var(--border-light);
+        }
+        .tooltip-wrap:hover .tooltip-text,
+        .tooltip-wrap.active .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* ============================================
+           PIXEL DIVIDER
+           ============================================ */
+        .pixel-divider {
+            height: 4px;
+            background: repeating-linear-gradient(
+                90deg,
+                var(--accent) 0px, var(--accent) 6px,
+                transparent 6px, transparent 10px
+            );
+            opacity: 0.4;
+        }
+
+        /* ============================================
+           APP LAYOUT
+           ============================================ */
+        #app {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+        }
+
+        .page {
+            animation: pageIn 0.3s ease-out;
+        }
+
+        @keyframes pageIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================
+           HEADER
+           ============================================ */
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 3px solid var(--border);
+            background: var(--bg-secondary);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            gap: 16px;
+        }
+        .app-header .logo {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .app-header .logo h1 {
+            color: var(--accent);
+        }
+        .app-header .subtitle {
+            font-size: 13px;
+            color: var(--fg-muted);
+            font-weight: 400;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            background: var(--card);
+            border: 2px solid var(--border);
+            color: var(--fg-muted);
+            padding: 6px 12px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s, background 0.2s;
+            white-space: nowrap;
+        }
+        .theme-toggle:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .theme-toggle:focus-visible {
+            outline: 3px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        /* ============================================
+           HOME PAGE
+           ============================================ */
+        .home-main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 48px 24px 80px;
+        }
+
+        .home-intro {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        .home-intro .big-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(16px, 4vw, 28px);
+            color: var(--accent);
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+        .home-intro .big-desc {
+            color: var(--fg-muted);
+            font-size: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .section-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            color: var(--fg-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        .uni-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+        }
+
+        .uni-card {
+            background: var(--card);
+            border: 3px solid var(--border);
+            padding: 24px;
+            cursor: pointer;
+            position: relative;
+            box-shadow:
+                4px 4px 0 0 var(--shadow),
+                inset 1px 1px 0 rgba(255,255,255,0.03);
+            transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            overflow: hidden;
+        }
+        .uni-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+        .uni-card[data-color="green"]::before { background: var(--accent); }
+        .uni-card[data-color="amber"]::before { background: var(--warning); }
+        .uni-card[data-color="blue"]::before { background: var(--info); }
+        .uni-card[data-color="red"]::before { background: var(--danger); }
+
+        .uni-card:hover {
+            transform: translate(-2px, -2px);
+            border-color: var(--border-light);
+            box-shadow:
+                6px 6px 0 0 var(--shadow),
+                inset 1px 1px 0 rgba(255,255,255,0.03),
+                0 0 20px var(--accent-glow);
+        }
+        .uni-card:active {
+            transform: translate(2px, 2px);
+            box-shadow:
+                0 0 0 0 var(--shadow),
+                inset 1px 1px 0 rgba(255,255,255,0.03);
+        }
+        .uni-card:focus-visible {
+            outline: 3px solid var(--accent);
+            outline-offset: 3px;
+        }
+
+        .uni-card-icon {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 18px;
+            color: var(--fg-muted);
+            flex-shrink: 0;
+            background: var(--input-bg);
+        }
+        .uni-card[data-color="green"] .uni-card-icon { color: var(--accent); border-color: var(--accent-dark); }
+        .uni-card[data-color="amber"] .uni-card-icon { color: var(--warning); border-color: #b45309; }
+
+        .uni-card-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+        .uni-card-info h2 {
+            color: var(--fg);
+        }
+        .uni-card-info .uni-fullname {
+            font-size: 13px;
+            color: var(--fg-muted);
+            line-height: 1.4;
+        }
+        .uni-card-info .uni-meta {
+            font-size: 11px;
+            color: var(--fg-dim);
+            margin-top: 4px;
+        }
+
+        .home-footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 32px;
+            border-top: 2px solid var(--border);
+        }
+        .home-footer p {
+            font-size: 12px;
+            color: var(--fg-dim);
+            line-height: 1.6;
+        }
+        .home-footer code {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 2px 6px;
+            font-size: 11px;
+            color: var(--accent);
+        }
+
+        /* ============================================
+           CALCULATOR PAGE
+           ============================================ */
+        .calc-header {
+            display: flex;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 3px solid var(--border);
+            background: var(--bg-secondary);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            gap: 16px;
+        }
+
+        .back-btn {
+            background: var(--card);
+            border: 2px solid var(--border);
+            color: var(--fg-muted);
+            padding: 8px 16px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: border-color 0.2s, color 0.2s;
+            flex-shrink: 0;
+        }
+        .back-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .back-btn:focus-visible {
+            outline: 3px solid var(--accent);
+            outline-offset: 2px;
+        }
+        .back-arrow {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-left: 3px solid currentColor;
+            border-bottom: 3px solid currentColor;
+            transform: rotate(45deg);
+        }
+
+        .calc-title {
+            flex: 1;
+            min-width: 0;
+        }
+        .calc-title h1 {
+            color: var(--fg);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .calc-main {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px 80px;
+            align-items: start;
+        }
+
+        .calc-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .calc-summary-wrap {
+            position: sticky;
+            top: 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Component card */
+        .component-card {
+            padding: 20px;
+        }
+        .comp-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .comp-header h3 {
+            color: var(--fg);
+        }
+
+        .comp-result {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 2px solid var(--border);
+        }
+        .comp-result-label {
+            font-size: 12px;
+            color: var(--fg-muted);
+            margin-bottom: 4px;
+        }
+        .comp-result-value {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 14px;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+        .comp-result-value span {
+            color: var(--fg-dim);
+            font-size: 11px;
+        }
+
+        /* CT items */
+        .ct-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .ct-item {
+            display: grid;
+            grid-template-columns: 50px 1fr 20px 1fr;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border: 2px solid var(--border);
+            background: var(--input-bg);
+            transition: border-color 0.25s, background 0.25s, opacity 0.25s;
+        }
+        .ct-item.ct-counted {
+            border-color: var(--accent-dark);
+            background: var(--accent-glow);
+        }
+        .ct-item.ct-ignored {
+            opacity: 0.35;
+            border-color: var(--danger);
+            background: var(--danger-bg);
+        }
+        .ct-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            color: var(--fg-muted);
+        }
+        .ct-sep {
+            text-align: center;
+            color: var(--fg-dim);
+            font-weight: 600;
+        }
+
+        .ct-item.ct-counted .ct-label { color: var(--accent-dark); }
+
+        /* Marks input row */
+        .marks-row {
+            display: grid;
+            grid-template-columns: 1fr 20px 1fr;
+            align-items: center;
+            gap: 8px;
+        }
+        .marks-sep {
+            text-align: center;
+            color: var(--fg-dim);
+            font-weight: 600;
+        }
+
+        /* Best-3 checkbox area */
+        .best3-area {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px dashed var(--border);
+        }
+
+        /* In-course total card */
+        .incourse-card {
+            padding: 20px;
+            border-color: var(--accent-dark);
+            background: linear-gradient(135deg, var(--card) 0%, var(--accent-glow) 100%);
+        }
+        .incourse-card .comp-result-value {
+            font-size: 18px;
+        }
+
+        /* Grade select card */
+        .grade-card {
+            padding: 20px;
+        }
+        .grade-card label {
+            display: block;
+            font-size: 12px;
+            color: var(--fg-muted);
+            margin-bottom: 8px;
+        }
+
+        /* ============================================
+           SUMMARY CARD
+           ============================================ */
+        .summary-card {
+            padding: 24px;
+        }
+        .summary-card h3 {
+            color: var(--fg);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .summary-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .summary-row:last-child { border-bottom: none; }
+        .summary-row .sr-label {
+            color: var(--fg-muted);
+            font-weight: 400;
+        }
+        .summary-row .sr-value {
+            font-weight: 600;
+            color: var(--fg);
+            font-variant-numeric: tabular-nums;
+        }
+        .summary-row.sr-highlight {
+            padding: 14px 0;
+            border-bottom: none;
+            border-top: 2px solid var(--border);
+            margin-top: 4px;
+        }
+        .summary-row.sr-highlight .sr-label {
+            color: var(--fg);
+            font-weight: 600;
+        }
+        .summary-row.sr-highlight .sr-value {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 13px;
+            color: var(--accent);
+        }
+
+        .summary-row.sr-grade .sr-value {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 12px;
+        }
+
+        .summary-row.sr-incourse .sr-value {
+            color: var(--info);
+            font-weight: 700;
+        }
+        .summary-row.sr-required-total .sr-value {
+            color: var(--warning);
+        }
+
+        /* Summary message */
+        .summary-message {
+            margin-top: 16px;
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            border: 2px solid var(--border);
+            display: none;
+        }
+        .summary-message.msg-secured {
+            display: block;
+            background: var(--success-bg);
+            border-color: var(--accent-dark);
+            color: var(--accent);
+        }
+        .summary-message.msg-impossible {
+            display: block;
+            background: var(--danger-bg);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+        .summary-message.msg-normal {
+            display: none;
+        }
+
+        /* Summary progress */
+        .summary-progress-section {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 2px solid var(--border);
+        }
+        .summary-progress-label {
+            font-size: 11px;
+            color: var(--fg-dim);
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* ============================================
+           VALUE ANIMATION
+           ============================================ */
+        .val-flash {
+            animation: valFlash 0.35s ease;
+        }
+        @keyframes valFlash {
+            0% { color: var(--accent); transform: scale(1.08); }
+            100% { color: inherit; transform: scale(1); }
+        }
+
+        /* ============================================
+           DECORATIVE ELEMENTS
+           ============================================ */
+        .deco-pixels {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .deco-pixel {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            opacity: 0.06;
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 900px) {
+            .calc-main {
+                grid-template-columns: 1fr;
+            }
+            .calc-summary-wrap {
+                position: static;
+            }
+        }
+        @media (max-width: 600px) {
+            .app-header { padding: 16px; }
+            .calc-header { padding: 12px 16px; }
+            .home-main { padding: 32px 16px 60px; }
+            .calc-main { padding: 24px 16px 60px; }
+            .uni-grid { grid-template-columns: 1fr; }
+            .ct-item { grid-template-columns: 40px 1fr 16px 1fr; gap: 6px; padding: 8px; }
+            .ct-label { font-size: 7px; }
+            .pixel-btn { padding: 10px 16px; font-size: 8px; }
+            .component-card { padding: 16px; }
+            .summary-card { padding: 16px; }
+            .marks-row { grid-template-columns: 1fr 16px 1fr; gap: 6px; }
+            .theme-toggle { padding: 5px 8px; font-size: 6px; }
+            .back-btn { padding: 6px 10px; font-size: 7px; }
+        }
+        @media (max-width: 400px) {
+            .ct-item { grid-template-columns: 36px 1fr 14px 1fr; }
+            .pixel-input { padding: 6px 8px; font-size: 13px; }
+        }
+
+        /* ============================================
+           REDUCED MOTION
+           ============================================ */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* ============================================
+           UTILITY
+           ============================================ */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            border: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Decorative pixel blocks -->
+    <div class="deco-pixels" aria-hidden="true" id="deco-pixels"></div>
+
+    <div id="app" role="main"></div>
+
+    <script>
+    /* ==============================================================
+       SECTION 1: UNIVERSITY REGISTRY
+       ==============================================================
+       Central registry for all universities. To add a new university,
+       simply call registerUniversity() with a config object.
+       No existing code needs to be modified.
+    ============================================================== */
+    const UniversityRegistry = {};
+
+    function registerUniversity(config) {
+        UniversityRegistry[config.id] = config;
+    }
+
+    /* ==============================================================
+       SECTION 2: SHARED CALCULATION ENGINE
+       ==============================================================
+       Pure functions that handle all math. Every university uses
+       these same functions — only the configs differ.
+    ============================================================== */
+    const CalcEngine = {
+
+        /* Calculate a CT group (best-of or all) */
+        calcCT(cts, bestOf, bestOfOptional, useBestOf, contributionMax) {
+            const converted = cts.map(ct => {
+                const obt = parseFloat(ct.obtained);
+                const max = parseFloat(ct.max);
+                if (isNaN(obt) || isNaN(max) || max === 0) return 0;
+                return Math.min(Math.max((obt / max) * contributionMax, 0), contributionMax);
+            });
+
+            let selectedIndices, ignoredIndices;
+
+            if (bestOfOptional && !useBestOf) {
+                /* Count all CTs */
+                selectedIndices = converted.map((_, i) => i);
+                ignoredIndices = [];
+            } else {
+                /* Count best N */
+                const indexed = converted.map((v, i) => ({ v, i }))
+                    .sort((a, b) => b.v - a.v);
+                selectedIndices = indexed.slice(0, bestOf).map(x => x.i);
+                ignoredIndices = indexed.slice(bestOf).map(x => x.i);
+            }
+
+            const sum = selectedIndices.reduce((s, i) => s + converted[i], 0);
+            const avg = selectedIndices.length > 0 ? sum / selectedIndices.length : 0;
+
+            return {
+                value: Math.min(Math.max(avg, 0), contributionMax),
+                selectedIndices,
+                ignoredIndices
+            };
+        },
+
+        /* Calculate a simple marks input (proportional conversion) */
+        calcMarks(obtained, max, contributionMax) {
+            const obt = parseFloat(obtained);
+            const mx = parseFloat(max);
+            if (isNaN(obt) || isNaN(mx) || mx === 0) return 0;
+            return Math.min(Math.max((obt / mx) * contributionMax, 0), contributionMax);
+        },
+
+        /* Calculate percentage-based attendance (RUET style) */
+        calcAttendancePercentage(percentage, threshold, contributionMax) {
+            const pct = parseFloat(percentage);
+            if (isNaN(pct)) return 0;
+            return Math.min(Math.max((pct / threshold) * contributionMax, 0), contributionMax);
+        },
+
+        /* Calculate final exam requirements */
+        calcFinal(incourseTotal, targetMinMarks, totalMarks, finalContributionMax, finalRawMax) {
+            const requiredFinalContribution = targetMinMarks - incourseTotal;
+            const requiredRawMarks = (requiredFinalContribution / finalContributionMax) * finalRawMax;
+
+            let status = 'normal';
+            if (requiredFinalContribution <= 0) {
+                status = 'secured';
+            } else if (requiredRawMarks > finalRawMax) {
+                status = 'impossible';
+            }
+
+            return {
+                requiredTotal: targetMinMarks,
+                requiredFinalContribution: Math.max(0, requiredFinalContribution),
+                requiredRawMarks: Math.max(0, requiredRawMarks),
+                status
+            };
+        }
+    };
+
+    /* ==============================================================
+       SECTION 3: THEME MANAGER
+    ============================================================== */
+    const ThemeManager = {
+        current: 'dark',
+        init() {
+            const saved = localStorage.getItem('cgpa_theme') || 'dark';
+            this.set(saved);
+        },
+        set(theme) {
+            this.current = theme;
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('cgpa_theme', theme);
+            /* Update all toggle buttons */
+            document.querySelectorAll('.theme-toggle').forEach(btn => {
+                btn.textContent = theme === 'dark' ? 'LIGHT' : 'DARK';
+            });
+        },
+        toggle() {
+            this.set(this.current === 'dark' ? 'light' : 'dark');
+        }
+    };
+
+    /* ==============================================================
+       SECTION 4: STORAGE MANAGER
+       ==============================================================
+       Each university's data is stored separately.
+    ============================================================== */
+    const StorageManager = {
+        save(uniId, data) {
+            try {
+                localStorage.setItem('cgpa_' + uniId, JSON.stringify(data));
+            } catch (e) { /* quota exceeded — ignore */ }
+        },
+        load(uniId) {
+            try {
+                const raw = localStorage.getItem('cgpa_' + uniId);
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) { return null; }
+        },
+        clear(uniId) {
+            localStorage.removeItem('cgpa_' + uniId);
+        }
+    };
+
+    /* ==============================================================
+       SECTION 5: UI GENERATOR
+       ==============================================================
+       Renders all UI from university configs. No hardcoded HTML
+       for any specific university.
+    ============================================================== */
+    const UI = {
+        app: null,
+        currentView: 'home',
+        currentUni: null,
+        calcTimeout: null,
+
+        init() {
+            this.app = document.getElementById('app');
+            this.navigate('home');
+            this.bindGlobalEvents();
+            this.createDecoPixels();
+        },
+
+        /* ---- Navigation ---- */
+        navigate(view, uniId) {
+            this.currentView = view;
+            this.currentUni = uniId || null;
+            window.scrollTo(0, 0);
+            this.render();
+        },
+
+        /* ---- Main render dispatcher ---- */
+        render() {
+            if (this.currentView === 'home') {
+                this.renderHome();
+            } else if (this.currentView === 'calculator') {
+                this.renderCalculator(this.currentUni);
+            }
+        },
+
+        /* ---- Home page ---- */
+        renderHome() {
+            const uniList = Object.values(UniversityRegistry);
+            const colorMap = { green: 'green', amber: 'amber', blue: 'blue', red: 'red' };
+
+            let cardsHTML = '';
+            uniList.forEach(uni => {
+                const colorKey = colorMap[uni.color] || 'green';
+                const compCount = uni.components.length;
+                const incourseStr = uni.inCourseTotal + ' in-course + ' + uni.finalContributionMax + ' final';
+                cardsHTML += `
+                    <div class="uni-card" data-color="${colorKey}" tabindex="0"
+                         role="button" aria-label="Open ${uni.name} calculator"
+                         data-uni="${uni.id}">
+                        <div class="uni-card-icon">${uni.name.charAt(0)}</div>
+                        <div class="uni-card-info">
+                            <h2>${uni.name}</h2>
+                            <p class="uni-fullname">${uni.fullName}</p>
+                            <p class="uni-meta">${compCount} components &middot; ${incourseStr}</p>
+                        </div>
+                    </div>`;
+            });
+
+            this.app.innerHTML = `
+                <div class="page">
+                    <header class="app-header">
+                        <div class="logo">
+                            <h1>CGPA Calculator</h1>
+                            <p class="subtitle">Multi-University Grade Planner</p>
+                        </div>
+                        <div class="header-right">
+                            <button class="theme-toggle" aria-label="Toggle theme"
+                                    onclick="ThemeManager.toggle()">LIGHT</button>
+                        </div>
+                    </header>
+                    <main class="home-main">
+                        <div class="home-intro">
+                            <h2 class="big-title">Calculate Your<br>Required Final Marks</h2>
+                            <p class="big-desc">Select your university below to find out exactly how many marks you need in the final exam to achieve your target grade.</p>
+                        </div>
+                        <div class="pixel-divider" style="margin-bottom:32px;"></div>
+                        <p class="section-label">Select University</p>
+                        <div class="uni-grid">${cardsHTML}</div>
+                        <footer class="home-footer">
+                            <p>Modular architecture &mdash; add any university by creating<br>a single configuration object. No existing code changes needed.</p>
+                        </footer>
+                    </main>
+                </div>`;
+
+            /* Bind university card clicks */
+            this.app.querySelectorAll('.uni-card').forEach(card => {
+                const handler = () => this.navigate('calculator', card.dataset.uni);
+                card.addEventListener('click', handler);
+                card.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); }
+                });
+            });
+        },
+
+        /* ---- Calculator page ---- */
+        renderCalculator(uniId) {
+            const uni = UniversityRegistry[uniId];
+            if (!uni) return this.navigate('home');
+
+            /* Build grade options */
+            let gradeOptions = '';
+            Object.entries(uni.gradeMapping).forEach(([label, data]) => {
+                gradeOptions += `<option value="${label}">${label} (${data.gpa.toFixed(2)})</option>`;
+            });
+
+            /* Build component sections */
+            let componentsHTML = '';
+            uni.components.forEach(comp => {
+                componentsHTML += this.renderComponentHTML(comp, uniId);
+            });
+
+            this.app.innerHTML = `
+                <div class="page">
+                    <header class="calc-header">
+                        <button class="back-btn" aria-label="Go back"
+                                onclick="UI.navigate('home')">
+                            <span class="back-arrow"></span> BACK
+                        </button>
+                        <div class="calc-title">
+                            <h1>${uni.name} Calculator</h1>
+                        </div>
+                        <div class="header-right">
+                            <button class="theme-toggle" aria-label="Toggle theme"
+                                    onclick="ThemeManager.toggle()">LIGHT</button>
+                        </div>
+                    </header>
+                    <main class="calc-main">
+                        <div class="calc-inputs" id="calc-inputs">
+                            ${componentsHTML}
+
+                            <!-- In-course total -->
+                            <div class="pixel-card incourse-card" id="incourse-card">
+                                <div class="comp-header">
+                                    <h3>In-course Total</h3>
+                                </div>
+                                <div class="comp-result">
+                                    <div class="comp-result-label">Total In-course Marks</div>
+                                    <div class="comp-result-value" id="incourse-value">
+                                        0.00 <span>/ ${uni.inCourseTotal}</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="incourse-progress" style="width:0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Grade target -->
+                            <div class="pixel-card grade-card">
+                                <div class="comp-header">
+                                    <h3>Target Grade</h3>
+                                </div>
+                                <label for="grade-select">Select the grade you want to achieve</label>
+                                <select class="pixel-select" id="grade-select" aria-label="Target grade">
+                                    ${gradeOptions}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="calc-summary-wrap">
+                            <!-- Summary card -->
+                            <div class="pixel-card summary-card" id="summary-card">
+                                <h3>Final Summary</h3>
+                                <div class="summary-rows" id="summary-rows">
+                                    <!-- Generated dynamically -->
+                                </div>
+                                <div class="summary-message" id="summary-message"></div>
+                                <div class="summary-progress-section" id="summary-progress-section">
+                                    <!-- Progress bars -->
+                                </div>
+                            </div>
+
+                            <!-- Reset button -->
+                            <button class="pixel-btn pixel-btn-danger" style="width:100%;"
+                                    onclick="UI.resetCalculator()">
+                                RESET ALL
+                            </button>
+                        </div>
+                    </main>
+                </div>`;
+
+            /* Restore saved data */
+            this.restoreData(uniId);
+
+            /* Initial calculation */
+            this.updateCalculation();
+
+            /* Bind live calculation events */
+            this.bindCalcEvents();
+        },
+
+        /* ---- Render a single component's HTML ---- */
+        renderComponentHTML(comp, uniId) {
+            if (comp.type === 'ct-group') {
+                return this.renderCTGroupHTML(comp);
+            } else if (comp.type === 'marks') {
+                return this.renderMarksHTML(comp);
+            } else if (comp.type === 'percentage-attendance') {
+                return this.renderPercentageAttendanceHTML(comp);
+            }
+            return '';
+        },
+
+        /* ---- CT Group HTML ---- */
+        renderCTGroupHTML(comp) {
+            let ctItems = '';
+            for (let i = 0; i < comp.count; i++) {
+                ctItems += `
+                    <div class="ct-item" id="ct-item-${i}" data-ct-index="${i}">
+                        <span class="ct-label">CT-${i + 1}</span>
+                        <input type="number" class="pixel-input" id="ct-${i}-obtained"
+                               placeholder="0" min="0" step="0.01"
+                               aria-label="CT ${i+1} obtained marks">
+                        <span class="ct-sep">/</span>
+                        <input type="number" class="pixel-input" id="ct-${i}-max"
+                               value="${comp.defaultMax}" min="0.01" step="0.01"
+                               aria-label="CT ${i+1} maximum marks">
+                    </div>`;
+            }
+
+            let best3HTML = '';
+            if (comp.bestOfOptional) {
+                best3HTML = `
+                    <div class="best3-area">
+                        <label class="pixel-checkbox-wrap" id="best3-label">
+                            <input type="checkbox" id="best3-check" checked>
+                            <span class="pixel-checkbox-visual"></span>
+                            <span class="pixel-checkbox-label">Count Best ${comp.bestOf} out of ${comp.count} Class Tests</span>
+                        </label>
+                    </div>`;
+            }
+
+            const tooltipText = comp.tooltip || `Best ${comp.bestOf} out of ${comp.count} CTs are counted. Each CT is converted to out of ${comp.contributionMax}, then averaged.`;
+
+            return `
+                <div class="pixel-card component-card" id="comp-${comp.id}">
+                    <div class="comp-header">
+                        <h3>${comp.label}</h3>
+                        <div class="tooltip-wrap">
+                            <div class="tooltip-icon">?</div>
+                            <div class="tooltip-text">${tooltipText}</div>
+                        </div>
+                    </div>
+                    <div class="ct-list">${ctItems}</div>
+                    ${best3HTML}
+                    <div class="comp-result">
+                        <div class="comp-result-label">CT Marks</div>
+                        <div class="comp-result-value" id="ct-result">
+                            0.00 <span>/ ${comp.contributionMax}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="ct-progress" style="width:0%"></div>
+                        </div>
+                    </div>
+                </div>`;
+        },
+
+        /* ---- Marks input HTML ---- */
+        renderMarksHTML(comp) {
+            const tooltipText = comp.tooltip || `Marks converted proportionally to ${comp.contributionMax}.`;
+
+            return `
+                <div class="pixel-card component-card" id="comp-${comp.id}">
+                    <div class="comp-header">
+                        <h3>${comp.label}</h3>
+                        <div class="tooltip-wrap">
+                            <div class="tooltip-icon">?</div>
+                            <div class="tooltip-text">${tooltipText}</div>
+                        </div>
+                    </div>
+                    <div class="marks-row">
+                        <input type="number" class="pixel-input" id="${comp.id}-obtained"
+                               placeholder="Obtained" min="0" step="0.01"
+                               aria-label="${comp.label} obtained marks">
+                        <span class="marks-sep">/</span>
+                        <input type="number" class="pixel-input" id="${comp.id}-max"
+                               value="${comp.defaultMax}" min="0.01" step="0.01"
+                               aria-label="${comp.label} maximum marks">
+                    </div>
+                    <div class="comp-result">
+                        <div class="comp-result-label">${comp.label} Marks</div>
+                        <div class="comp-result-value" id="${comp.id}-result">
+                            0.00 <span>/ ${comp.contributionMax}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="${comp.id}-progress" style="width:0%"></div>
+                        </div>
+                    </div>
+                </div>`;
+        },
+
+        /* ---- Percentage Attendance HTML ---- */
+        renderPercentageAttendanceHTML(comp) {
+            const tooltipText = comp.tooltip ||
+                `${comp.fullMarkThreshold}% attendance = Full ${comp.contributionMax} marks. Below ${comp.fullMarkThreshold}% decreases proportionally.`;
+
+            return `
+                <div class="pixel-card component-card" id="comp-${comp.id}">
+                    <div class="comp-header">
+                        <h3>${comp.label}</h3>
+                        <div class="tooltip-wrap">
+                            <div class="tooltip-icon">?</div>
+                            <div class="tooltip-text">${tooltipText}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input type="number" class="pixel-input" id="${comp.id}-percentage"
+                               placeholder="e.g. 70" min="0" max="100" step="0.1"
+                               aria-label="Attendance percentage"
+                               style="max-width:160px;">
+                        <span style="color:var(--fg-muted);font-size:14px;font-weight:500;">%</span>
+                    </div>
+                    <div class="comp-result">
+                        <div class="comp-result-label">Attendance Marks</div>
+                        <div class="comp-result-value" id="${comp.id}-result">
+                            0.00 <span>/ ${comp.contributionMax}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="${comp.id}-progress" style="width:0%"></div>
+                        </div>
+                    </div>
+                </div>`;
+        },
+
+        /* ---- Collect all input data ---- */
+        collectData() {
+            const uni = UniversityRegistry[this.currentUni];
+            const data = { grade: '', components: {} };
+
+            const gradeEl = document.getElementById('grade-select');
+            if (gradeEl) data.grade = gradeEl.value;
+
+            uni.components.forEach(comp => {
+                if (comp.type === 'ct-group') {
+                    const cts = [];
+                    for (let i = 0; i < comp.count; i++) {
+                        const obtEl = document.getElementById(`ct-${i}-obtained`);
+                        const maxEl = document.getElementById(`ct-${i}-max`);
+                        cts.push({
+                            obtained: obtEl ? obtEl.value : '',
+                            max: maxEl ? maxEl.value : String(comp.defaultMax)
+                        });
+                    }
+                    data.components[comp.id] = { cts };
+                    if (comp.bestOfOptional) {
+                        const checkEl = document.getElementById('best3-check');
+                        data.components[comp.id].useBestOf = checkEl ? checkEl.checked : true;
+                    }
+                } else if (comp.type === 'marks') {
+                    const obtEl = document.getElementById(`${comp.id}-obtained`);
+                    const maxEl = document.getElementById(`${comp.id}-max`);
+                    data.components[comp.id] = {
+                        obtained: obtEl ? obtEl.value : '',
+                        max: maxEl ? maxEl.value : String(comp.defaultMax)
+                    };
+                } else if (comp.type === 'percentage-attendance') {
+                    const pctEl = document.getElementById(`${comp.id}-percentage`);
+                    data.components[comp.id] = {
+                        percentage: pctEl ? pctEl.value : ''
+                    };
+                }
+            });
+
+            return data;
+        },
+
+        /* ---- Restore saved data ---- */
+        restoreData(uniId) {
+            const data = StorageManager.load(uniId);
+            if (!data) return;
+
+            const uni = UniversityRegistry[uniId];
+
+            if (data.grade) {
+                const gradeEl = document.getElementById('grade-select');
+                if (gradeEl) gradeEl.value = data.grade;
+            }
+
+            uni.components.forEach(comp => {
+                const cd = data.components ? data.components[comp.id] : null;
+                if (!cd) return;
+
+                if (comp.type === 'ct-group' && cd.cts) {
+                    cd.cts.forEach((ct, i) => {
+                        if (i < comp.count) {
+                            const obtEl = document.getElementById(`ct-${i}-obtained`);
+                            const maxEl = document.getElementById(`ct-${i}-max`);
+                            if (obtEl && ct.obtained !== '') obtEl.value = ct.obtained;
+                            if (maxEl && ct.max !== '') maxEl.value = ct.max;
+                        }
+                    });
+                    if (comp.bestOfOptional && cd.useBestOf !== undefined) {
+                        const checkEl = document.getElementById('best3-check');
+                        if (checkEl) checkEl.checked = cd.useBestOf;
+                    }
+                } else if (comp.type === 'marks') {
+                    const obtEl = document.getElementById(`${comp.id}-obtained`);
+                    const maxEl = document.getElementById(`${comp.id}-max`);
+                    if (obtEl && cd.obtained !== '') obtEl.value = cd.obtained;
+                    if (maxEl && cd.max !== '') maxEl.value = cd.max;
+                } else if (comp.type === 'percentage-attendance') {
+                    const pctEl = document.getElementById(`${comp.id}-percentage`);
+                    if (pctEl && cd.percentage !== '') pctEl.value = cd.percentage;
+                }
+            });
+        },
+
+        /* ---- Bind live calculation events ---- */
+        bindCalcEvents() {
+            const container = document.getElementById('calc-inputs');
+            if (!container) return;
+
+            container.addEventListener('input', () => {
+                clearTimeout(this.calcTimeout);
+                this.calcTimeout = setTimeout(() => {
+                    this.updateCalculation();
+                    this.saveData();
+                }, 50);
+            });
+
+            container.addEventListener('change', () => {
+                this.updateCalculation();
+                this.saveData();
+            });
+        },
+
+        /* ---- Save current data ---- */
+        saveData() {
+            if (!this.currentUni) return;
+            StorageManager.save(this.currentUni, this.collectData());
+        },
+
+        /* ---- Master calculation update ---- */
+        updateCalculation() {
+            const uni = UniversityRegistry[this.currentUni];
+            if (!uni) return;
+
+            const results = [];
+            let incourseTotal = 0;
+
+            /* Calculate each component */
+            uni.components.forEach(comp => {
+                let value = 0;
+                let extra = null;
+
+                if (comp.type === 'ct-group') {
+                    const cts = [];
+                    for (let i = 0; i < comp.count; i++) {
+                        const obtEl = document.getElementById(`ct-${i}-obtained`);
+                        const maxEl = document.getElementById(`ct-${i}-max`);
+                        cts.push({
+                            obtained: obtEl ? obtEl.value : '',
+                            max: maxEl ? maxEl.value : String(comp.defaultMax)
+                        });
+                    }
+
+                    let useBestOf = true;
+                    if (comp.bestOfOptional) {
+                        const checkEl = document.getElementById('best3-check');
+                        useBestOf = checkEl ? checkEl.checked : true;
+                    }
+
+                    const ctResult = CalcEngine.calcCT(
+                        cts, comp.bestOf, comp.bestOfOptional, useBestOf, comp.contributionMax
+                    );
+                    value = ctResult.value;
+                    extra = ctResult;
+
+                    /* Highlight CT items */
+                    for (let i = 0; i < comp.count; i++) {
+                        const item = document.getElementById(`ct-item-${i}`);
+                        if (item) {
+                            item.classList.remove('ct-counted', 'ct-ignored');
+                            if (ctResult.selectedIndices.includes(i)) {
+                                item.classList.add('ct-counted');
+                            } else if (ctResult.ignoredIndices.includes(i)) {
+                                item.classList.add('ct-ignored');
+                            }
+                        }
+                    }
+                } else if (comp.type === 'marks') {
+                    const obtEl = document.getElementById(`${comp.id}-obtained`);
+                    const maxEl = document.getElementById(`${comp.id}-max`);
+                    value = CalcEngine.calcMarks(
+                        obtEl ? obtEl.value : '',
+                        maxEl ? maxEl.value : String(comp.defaultMax),
+                        comp.contributionMax
+                    );
+                } else if (comp.type === 'percentage-attendance') {
+                    const pctEl = document.getElementById(`${comp.id}-percentage`);
+                    value = CalcEngine.calcAttendancePercentage(
+                        pctEl ? pctEl.value : '',
+                        comp.fullMarkThreshold,
+                        comp.contributionMax
+                    );
+                }
+
+                /* Clamp value */
+                value = Math.min(Math.max(value, 0), comp.contributionMax);
+
+                /* Update component result display */
+                const resultEl = document.getElementById(`${comp.id}-result`);
+                if (resultEl) {
+                    resultEl.innerHTML = `${value.toFixed(2)} <span>/ ${comp.contributionMax}</span>`;
+                    this.flashElement(resultEl);
+                }
+
+                /* Update component progress */
+                const progressEl = document.getElementById(`${comp.id}-progress`);
+                if (progressEl) {
+                    const pct = Math.min((value / comp.contributionMax) * 100, 100);
+                    progressEl.style.width = pct + '%';
+                    progressEl.classList.remove('fill-warning', 'fill-danger', 'fill-over');
+                    if (value > comp.contributionMax) progressEl.classList.add('fill-over');
+                }
+
+                /* Input validation styling */
+                this.validateComponentInputs(comp);
+
+                results.push({ comp, value, extra });
+                incourseTotal += value;
+            });
+
+            /* Clamp in-course total */
+            incourseTotal = Math.min(Math.max(incourseTotal, 0), uni.inCourseTotal);
+
+            /* Update in-course display */
+            const incourseValEl = document.getElementById('incourse-value');
+            if (incourseValEl) {
+                incourseValEl.innerHTML = `${incourseTotal.toFixed(2)} <span>/ ${uni.inCourseTotal}</span>`;
+                this.flashElement(incourseValEl);
+            }
+            const incourseProgressEl = document.getElementById('incourse-progress');
+            if (incourseProgressEl) {
+                const pct = Math.min((incourseTotal / uni.inCourseTotal) * 100, 100);
+                incourseProgressEl.style.width = pct + '%';
+            }
+
+            /* Get target grade */
+            const gradeEl = document.getElementById('grade-select');
+            const targetGrade = gradeEl ? gradeEl.value : 'A+';
+            const gradeData = uni.gradeMapping[targetGrade] || { gpa: 0, minMarks: 0 };
+
+            /* Calculate final requirements */
+            const finalResult = CalcEngine.calcFinal(
+                incourseTotal,
+                gradeData.minMarks,
+                uni.totalMarks,
+                uni.finalContributionMax,
+                uni.finalRawMax
+            );
+
+            /* Render summary */
+            this.renderSummary(results, incourseTotal, targetGrade, gradeData, finalResult, uni);
+        },
+
+        /* ---- Render summary rows ---- */
+        renderSummary(results, incourseTotal, targetGrade, gradeData, finalResult, uni) {
+            const rowsEl = document.getElementById('summary-rows');
+            const msgEl = document.getElementById('summary-message');
+            const progressSection = document.getElementById('summary-progress-section');
+            if (!rowsEl) return;
+
+            let html = '';
+
+            /* Component rows */
+            results.forEach(r => {
+                html += `
+                    <div class="summary-row">
+                        <span class="sr-label">${r.comp.label}</span>
+                        <span class="sr-value">${r.value.toFixed(2)} / ${r.comp.contributionMax}</span>
+                    </div>`;
+            });
+
+            /* In-course total */
+            html += `
+                <div class="summary-row sr-incourse">
+                    <span class="sr-label">In-course Total</span>
+                    <span class="sr-value">${incourseTotal.toFixed(2)} / ${uni.inCourseTotal}</span>
+                </div>`;
+
+            /* Target grade */
+            html += `
+                <div class="summary-row sr-grade">
+                    <span class="sr-label">Target Grade</span>
+                    <span class="sr-value" style="color:var(--warning);">${targetGrade} (${gradeData.gpa.toFixed(2)})</span>
+                </div>`;
+
+            /* Required total marks */
+            html += `
+                <div class="summary-row sr-required-total">
+                    <span class="sr-label">Required Total Marks</span>
+                    <span class="sr-value">${finalResult.requiredTotal.toFixed(2)}</span>
+                </div>`;
+
+            /* Required final contribution */
+            html += `
+                <div class="summary-row">
+                    <span class="sr-label">Required Final Contribution</span>
+                    <span class="sr-value">${finalResult.requiredFinalContribution.toFixed(2)} / ${uni.finalContributionMax}</span>
+                </div>`;
+
+            /* Required marks in final exam — highlighted */
+            let finalValueText;
+            if (finalResult.status === 'secured') {
+                finalValueText = '0.00 / ' + uni.finalRawMax;
+            } else if (finalResult.status === 'impossible') {
+                finalValueText = '> ' + uni.finalRawMax + ' / ' + uni.finalRawMax;
+            } else {
+                finalValueText = finalResult.requiredRawMarks.toFixed(2) + ' / ' + uni.finalRawMax;
+            }
+
+            html += `
+                <div class="summary-row sr-highlight">
+                    <span class="sr-label">Required Marks in Final Exam</span>
+                    <span class="sr-value">${finalValueText}</span>
+                </div>`;
+
+            rowsEl.innerHTML = html;
+
+            /* Status message */
+            msgEl.className = 'summary-message';
+            if (finalResult.status === 'secured') {
+                msgEl.classList.add('msg-secured');
+                msgEl.textContent = 'Target already secured. You need 0 in the final exam.';
+            } else if (finalResult.status === 'impossible') {
+                msgEl.classList.add('msg-impossible');
+                msgEl.textContent = 'Impossible to achieve this grade even with full marks in final.';
+            } else {
+                msgEl.classList.add('msg-normal');
+                msgEl.textContent = '';
+            }
+
+            /* Progress bars in summary */
+            if (progressSection) {
+                const incoursePct = Math.min((incourseTotal / uni.inCourseTotal) * 100, 100);
+                const requiredPct = finalResult.status === 'impossible' ? 100 :
+                    Math.min((finalResult.requiredFinalContribution / uni.finalContributionMax) * 100, 100);
+
+                progressSection.innerHTML = `
+                    <div style="margin-bottom:12px;">
+                        <div class="summary-progress-label">
+                            <span>In-course Progress</span>
+                            <span>${incoursePct.toFixed(1)}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width:${incoursePct}%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="summary-progress-label">
+                            <span>Final Exam Needed</span>
+                            <span>${finalResult.status === 'impossible' ? '>100' : requiredPct.toFixed(1)}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill ${finalResult.status === 'impossible' ? 'fill-danger' : requiredPct > 80 ? 'fill-warning' : ''}"
+                                 style="width:${Math.min(requiredPct, 100)}%"></div>
+                        </div>
+                    </div>`;
+            }
+        },
+
+        /* ---- Input validation styling ---- */
+        validateComponentInputs(comp) {
+            if (comp.type === 'ct-group') {
+                for (let i = 0; i < comp.count; i++) {
+                    const obtEl = document.getElementById(`ct-${i}-obtained`);
+                    const maxEl = document.getElementById(`ct-${i}-max`);
+                    if (obtEl && maxEl) {
+                        this.validateInput(obtEl, maxEl);
+                    }
+                }
+            } else if (comp.type === 'marks') {
+                const obtEl = document.getElementById(`${comp.id}-obtained`);
+                const maxEl = document.getElementById(`${comp.id}-max`);
+                if (obtEl && maxEl) {
+                    this.validateInput(obtEl, maxEl);
+                }
+            } else if (comp.type === 'percentage-attendance') {
+                const pctEl = document.getElementById(`${comp.id}-percentage`);
+                if (pctEl) {
+                    const v = parseFloat(pctEl.value);
+                    if (pctEl.value !== '' && (isNaN(v) || v < 0 || v > 100)) {
+                        pctEl.classList.add('input-error');
+                    } else {
+                        pctEl.classList.remove('input-error');
+                    }
+                }
+            }
+        },
+
+        validateInput(obtEl, maxEl) {
+            const obt = parseFloat(obtEl.value);
+            const max = parseFloat(maxEl.value);
+            let hasError = false;
+
+            if (obtEl.value !== '' && (isNaN(obt) || obt < 0)) hasError = true;
+            if (maxEl.value !== '' && (isNaN(max) || max <= 0)) hasError = true;
+            if (!isNaN(obt) && !isNaN(max) && obt > max) hasError = true;
+
+            if (hasError) {
+                obtEl.classList.add('input-error');
+                maxEl.classList.add('input-error');
+            } else {
+                obtEl.classList.remove('input-error');
+                maxEl.classList.remove('input-error');
+            }
+        },
+
+        /* ---- Flash animation on value change ---- */
+        flashElement(el) {
+            el.classList.remove('val-flash');
+            void el.offsetWidth; /* Force reflow */
+            el.classList.add('val-flash');
+        },
+
+        /* ---- Reset calculator ---- */
+        resetCalculator() {
+            const uni = UniversityRegistry[this.currentUni];
+            if (!uni) return;
+
+            uni.components.forEach(comp => {
+                if (comp.type === 'ct-group') {
+                    for (let i = 0; i < comp.count; i++) {
+                        const obtEl = document.getElementById(`ct-${i}-obtained`);
+                        const maxEl = document.getElementById(`ct-${i}-max`);
+                        if (obtEl) { obtEl.value = ''; obtEl.classList.remove('input-error'); }
+                        if (maxEl) { maxEl.value = String(comp.defaultMax); maxEl.classList.remove('input-error'); }
+                        const item = document.getElementById(`ct-item-${i}`);
+                        if (item) item.classList.remove('ct-counted', 'ct-ignored');
+                    }
+                    if (comp.bestOfOptional) {
+                        const checkEl = document.getElementById('best3-check');
+                        if (checkEl) checkEl.checked = true;
+                    }
+                } else if (comp.type === 'marks') {
+                    const obtEl = document.getElementById(`${comp.id}-obtained`);
+                    const maxEl = document.getElementById(`${comp.id}-max`);
+                    if (obtEl) { obtEl.value = ''; obtEl.classList.remove('input-error'); }
+                    if (maxEl) { maxEl.value = String(comp.defaultMax); maxEl.classList.remove('input-error'); }
+                } else if (comp.type === 'percentage-attendance') {
+                    const pctEl = document.getElementById(`${comp.id}-percentage`);
+                    if (pctEl) { pctEl.value = ''; pctEl.classList.remove('input-error'); }
+                }
+            });
+
+            const gradeEl = document.getElementById('grade-select');
+            if (gradeEl) gradeEl.value = 'A+';
+
+            StorageManager.clear(this.currentUni);
+            this.updateCalculation();
+        },
+
+        /* ---- Global event bindings ---- */
+        bindGlobalEvents() {
+            /* Tooltip click toggle for mobile */
+            document.addEventListener('click', (e) => {
+                const wrap = e.target.closest('.tooltip-wrap');
+                if (wrap) {
+                    e.stopPropagation();
+                    /* Close others */
+                    document.querySelectorAll('.tooltip-wrap.active').forEach(w => {
+                        if (w !== wrap) w.classList.remove('active');
+                    });
+                    wrap.classList.toggle('active');
+                } else {
+                    document.querySelectorAll('.tooltip-wrap.active').forEach(w => {
+                        w.classList.remove('active');
+                    });
+                }
+            });
+
+            /* Keyboard: Escape to go back */
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && this.currentView === 'calculator') {
+                    this.navigate('home');
+                }
+            });
+        },
+
+        /* ---- Decorative pixel blocks ---- */
+        createDecoPixels() {
+            const container = document.getElementById('deco-pixels');
+            if (!container) return;
+            let html = '';
+            for (let i = 0; i < 20; i++) {
+                const x = Math.floor(Math.random() * 100);
+                const y = Math.floor(Math.random() * 100);
+                const size = 4 + Math.floor(Math.random() * 12);
+                const delay = Math.random() * 8;
+                const dur = 6 + Math.random() * 8;
+                html += `<div class="deco-pixel" style="
+                    left:${x}%;top:${y}%;width:${size}px;height:${size}px;
+                    animation:decoFloat ${dur}s ${delay}s ease-in-out infinite alternate;
+                "></div>`;
+            }
+            container.innerHTML = html;
+
+            /* Add keyframe dynamically */
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes decoFloat {
+                    0% { transform: translateY(0) rotate(0deg); opacity: 0.04; }
+                    100% { transform: translateY(-30px) rotate(90deg); opacity: 0.08; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    };
+
+    /* ==============================================================
+       SECTION 6: UNIVERSITY CONFIGURATIONS
+       ==============================================================
+       
+       HOW TO ADD A NEW UNIVERSITY (3 simple steps):
+       ------------------------------------------------
+       1. Copy any config block below as a template.
+       2. Change the id, name, fullName, color, grading,
+          in-course total, final contribution, and components.
+       3. Call registerUniversity(yourConfig).
+       
+       That's it. The UI will auto-generate everything.
+       No other file, function, or component needs editing.
+
+       CONFIG REFERENCE:
+       ------------------------------------------------
+       id                 — Unique string (URL-safe)
+       name               — Short display name (e.g. "DU")
+       fullName           — Full university name
+       color              — 'green' | 'amber' | 'blue' | 'red'
+       inCourseTotal      — Sum of all component contributionMax values
+       finalContributionMax — How much the final exam contributes to total
+       finalRawMax        — Raw marks of the final exam (usually 100)
+       totalMarks         — Total course marks (inCourseTotal + finalContributionMax)
+       gradeMapping       — { 'Letter': { gpa: X.XX, minMarks: YY }, ... }
+       components         — Array of component objects:
+       
+         Component types:
+         
+         'ct-group':
+           id, label, type:'ct-group', count, defaultMax,
+           bestOf (N), bestOfOptional (bool), contributionMax, tooltip
+         
+         'marks':
+           id, label, type:'marks', defaultMax, contributionMax, tooltip
+         
+         'percentage-attendance':
+           id, label, type:'percentage-attendance',
+           fullMarkThreshold, contributionMax, tooltip
+    ============================================================== */
+
+    /* ---------- UNIVERSITY 1: RUET ---------- */
+    registerUniversity({
+        id: 'ruet',
+        name: 'RUET',
+        fullName: 'Rajshahi University of Engineering & Technology',
+        color: 'green',
+        inCourseTotal: 40,
+        finalContributionMax: 60,
+        finalRawMax: 100,
+        totalMarks: 100,
+        gradeMapping: {
+            'A+': { gpa: 4.00, minMarks: 80 },
+            'A':  { gpa: 3.75, minMarks: 75 },
+            'A-': { gpa: 3.50, minMarks: 70 },
+            'B+': { gpa: 3.25, minMarks: 65 },
+            'B':  { gpa: 3.00, minMarks: 60 },
+            'B-': { gpa: 2.75, minMarks: 55 },
+            'C+': { gpa: 2.50, minMarks: 50 },
+            'C':  { gpa: 2.25, minMarks: 45 },
+            'D':  { gpa: 2.00, minMarks: 40 },
+            'F':  { gpa: 0.00, minMarks: 0  }
+        },
+        components: [
+            {
+                id: 'ct',
+                label: 'Class Tests',
+                type: 'ct-group',
+                count: 4,
+                defaultMax: 20,
+                bestOf: 3,
+                bestOfOptional: false,
+                contributionMax: 20,
+                tooltip: 'Best 3 out of 4 CTs are counted. Each CT is converted to out of 20 using its own maximum marks, then the best 3 are averaged.'
+            },
+            {
+                id: 'attendance',
+                label: 'Attendance',
+                type: 'percentage-attendance',
+                fullMarkThreshold: 70,
+                contributionMax: 10,
+                tooltip: '70% attendance = Full 10 marks. Below 70% decreases proportionally. Above 70% still caps at 10.'
+            },
+            {
+                id: 'quiz',
+                label: 'Quiz / Assignment',
+                type: 'marks',
+                defaultMax: 10,
+                contributionMax: 10,
+                tooltip: 'Marks converted proportionally to 10. Default maximum is 10.'
+            }
+        ]
+    });
+
+    /* ---------- UNIVERSITY 2: BUP ---------- */
+    registerUniversity({
+        id: 'bup',
+        name: 'BUP',
+        fullName: 'Bangladesh University of Professionals',
+        color: 'amber',
+        inCourseTotal: 60,
+        finalContributionMax: 40,
+        finalRawMax: 100,
+        totalMarks: 100,
+        gradeMapping: {
+            'A+': { gpa: 4.00, minMarks: 80 },
+            'A':  { gpa: 3.75, minMarks: 75 },
+            'A-': { gpa: 3.50, minMarks: 70 },
+            'B+': { gpa: 3.25, minMarks: 65 },
+            'B':  { gpa: 3.00, minMarks: 60 },
+            'B-': { gpa: 2.75, minMarks: 55 },
+            'C+': { gpa: 2.50, minMarks: 50 },
+            'C':  { gpa: 2.25, minMarks: 45 },
+            'D':  { gpa: 2.00, minMarks: 40 },
+            'F':  { gpa: 0.00, minMarks: 0  }
+        },
+        components: [
+            {
+                id: 'ct',
+                label: 'Class Tests',
+                type: 'ct-group',
+                count: 4,
+                defaultMax: 10,
+                bestOf: 3,
+                bestOfOptional: true,
+                contributionMax: 10,
+                tooltip: 'Optionally count best 3 out of 4 CTs. When checked, the lowest CT is dropped. Each CT is converted to out of 10 using its own maximum marks, then averaged.'
+            },
+            {
+                id: 'midterm',
+                label: 'Mid-Term',
+                type: 'marks',
+                defaultMax: 20,
+                contributionMax: 20,
+                tooltip: 'Mid-Term marks converted proportionally to 20. The maximum marks are editable if your mid-term was out of a different total.'
+            },
+            {
+                id: 'attendance',
+                label: 'Attendance',
+                type: 'marks',
+                defaultMax: 10,
+                contributionMax: 10,
+                tooltip: 'Attendance marks converted proportionally to 10. Input your obtained attendance marks and the maximum possible.'
+            },
+            {
+                id: 'assignment',
+                label: 'Assignment / Term Paper',
+                type: 'marks',
+                defaultMax: 10,
+                contributionMax: 10,
+                tooltip: 'Assignment or Term Paper marks converted proportionally to 10.'
+            },
+            {
+                id: 'participation',
+                label: 'Class Participation',
+                type: 'marks',
+                defaultMax: 10,
+                contributionMax: 10,
+                tooltip: 'Class Participation marks converted proportionally to 10.'
+            }
+        ]
+    });
+
+    /* ==============================================================
+       SECTION 7: APP INITIALIZATION
+       ==============================================================
+       To add more universities, simply add more registerUniversity()
+       calls above this section. Nothing else needs to change.
+    ============================================================== */
+    document.addEventListener('DOMContentLoaded', () => {
+        ThemeManager.init();
+        UI.init();
+    });
+    </script>
+</body>
+</html>
